@@ -5,7 +5,6 @@ interface IPostion {
     getValue() : IVector
 }
 
-//тест, который проверяет, что для уравнения x^2+1 = 0 корней нет (возвращается пустой массив)
 it('находящегося в точке (12, 5) и скорость (-7, 3) движение меняет положение на (5, 8)', () => {
     let mockMovable: Movable = {
         getPosition() : IVector {
@@ -25,4 +24,24 @@ it('находящегося в точке (12, 5) и скорость (-7, 3) �
     const result = command.getValue();
 
     assert.deepEqual(result, expected)
+})
+
+it('Попытка сдвинуть объект, у которого невозможно прочитать положение в пространстве, приводит к ошибк', () => {
+    let mockMovable: Movable = {
+        getPosition() : IVector | never {
+            throw new Error("No data");
+        },
+        getVelocity() : IVector {
+            return {x:-7, y: 3}
+        },
+        setPosition( newV: IVector) : void {
+
+        }
+    };
+
+    const command = new movable.CommandMove(mockMovable);
+
+    it("Error thrown", function(){
+        assert.throw(() => { command.execute() }, Error);
+    });
 })
