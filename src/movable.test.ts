@@ -40,8 +40,45 @@ it('Попытка сдвинуть объект, у которого невоз
     };
 
     const command = new movable.CommandMove(mockMovable);
+    
+    assert.throws(() => { command.execute() }, Error);
+    
+})
 
-    it("Error thrown", function(){
-        assert.throw(() => { command.execute() }, Error);
-    });
+it('Попытка сдвинуть объект, у которого невозможно прочитать значение мгновенной скорости, приводит к ошибке', () => {
+    let mockMovable: Movable = {
+        getPosition() : IVector  {
+            return {x:12, y: 5}
+        },
+        getVelocity() : IVector | never {
+            throw new Error("No data")
+        },
+        setPosition( newV: IVector) : void {
+
+        }
+    };
+
+    const command = new movable.CommandMove(mockMovable);
+   
+    assert.throws(() => { command.execute() }, Error);
+    
+})
+
+it('Попытка сдвинуть объект, у которого невозможно изменить положение в пространстве, приводит к ошибке', () => {
+    let mockMovable: Movable = {
+        getPosition() : IVector {
+            return {x:12, y: 5}
+        },
+        getVelocity() : IVector {
+            return {x:-7, y: 3}
+        },
+        setPosition( newV: IVector) : void | never {
+            throw new Error("No data")
+        }
+    };
+
+    const command = new movable.CommandMove(mockMovable);
+    
+    assert.throws(() => { command.execute() }, Error);
+    
 })
