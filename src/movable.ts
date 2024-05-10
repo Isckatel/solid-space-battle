@@ -9,6 +9,11 @@ interface Movable {
     setPosition( newV: IVector) : void
 }
 
+interface ICommand {
+    execute(): void
+    getType(): string
+}
+
 class Vector  implements IVector  {
     public x: number
     public y: number
@@ -18,7 +23,8 @@ class Vector  implements IVector  {
     }
 }
 
-class CommandMove {
+
+class CommandMove implements ICommand  {
     private movable: Movable
     private position: IVector = {x:0, y:0}
     constructor(movable: Movable) {
@@ -30,6 +36,9 @@ class CommandMove {
             this.movable.getPosition().y + this.movable.getVelocity().y
         )
         this.movable.setPosition(this.position)
+    }
+    public getType(): string {
+        return 'Movable';
     }
     public getValue(): IVector {
         return this.position
