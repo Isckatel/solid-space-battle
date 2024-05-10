@@ -1,5 +1,6 @@
 const rotableCom = require("./rotable")
 const movableCom = require("./movable")
+const exStore = require("./exceptionStore")
 
 const CommandRotateCl = rotableCom.CommandRotate
 const CommandMoveCl = movableCom.CommandMove
@@ -27,31 +28,13 @@ let commandsCollection: Array<ICommand> = [movableCommand]
 
 let stopLoop = false; 
 
-class ExceptionMovalbeCommand implements ICommand {
-    execute(): void {
-        console.log('exceptionMovalbeCommand')
-    }
-
-    getType(): string {
-        return 'exceptionMovalbeCommand'
-    }
-}
-
-let exceptionMovalbeCommand = new ExceptionMovalbeCommand();
-
-let exceptionMovalbeMap = new Map([
-    ['Error', exceptionMovalbeCommand],
-])
-
 const exceptionHandler = {
     
-    stort: new Map([
-        ['Movable', exceptionMovalbeMap],
-    ]),
-    handle: function(c: ICommand , e) {
+    store: exStore,
+    handle: function(c, e) {
         let ct = c ? c.getType() : 'Movable' //TODO Default
         let et = e.getType()
-        return this.stort.get(ct)?.get(et);
+        return this.store.get(ct)?.get(et);
     }
 }
 
@@ -64,8 +47,7 @@ while(!stopLoop) {
             stopLoop = true
         }
     } catch (e) {
-        if (c) {
-        exceptionHandler.handle(c,e).execute()
-        }
+        exceptionHandler.handle(c,e)?.execute()
     }
 }
+
