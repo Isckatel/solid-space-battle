@@ -1,5 +1,6 @@
 const assert2 = require("assert")
 const main = require("./main")
+const movableCom2 = require("./movable")
 
 describe("Execute Tests", function(){
     it('Работа исключений', () => {
@@ -13,7 +14,7 @@ describe("Execute Tests", function(){
             setPosition(newV) {
             }
         };
-        const movableCommand = new movableCom.CommandMove(mockMovable)
+        const movableCommand = new movableCom2.CommandMove(mockMovable)
         let commandsCollection: Array<ICommand> = [movableCommand]
         let stopLoop = false; 
         let exceptionHandler = main.exceptionHandler;

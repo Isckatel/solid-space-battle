@@ -40,7 +40,7 @@ class ExceptionHandler {
     }
 }
 
-const exceptionHandler = new ExceptionHandler(exStore)
+const exceptionHandler = new ExceptionHandler(exStore.exceptionStore)
 
 while(!stopLoop) {
     let  c = commandsCollection.shift()
@@ -55,3 +55,4 @@ while(!stopLoop) {
     }
 }
 
+module.exports.exceptionHandler = exceptionHandler
