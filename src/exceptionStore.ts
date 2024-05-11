@@ -13,13 +13,13 @@ class ExceptionMovalbeCommand implements ICommand {
     }
 }
 
-let exceptionMovalbeCommand = new ExceptionMovalbeCommand();
+let exceptionMovalbeCommand: ICommand = new ExceptionMovalbeCommand();
 
 let exceptionMovalbeMap = new Map([
     ['Error', exceptionMovalbeCommand],
 ])
 
-const exceptionStore = new Map([
+const exceptionStore = new Map<string,  Map<string, ICommand>>([
     ['Movable', exceptionMovalbeMap],
 ])
 
