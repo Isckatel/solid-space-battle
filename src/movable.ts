@@ -38,7 +38,7 @@ class CommandMove implements ICommand  {
         this.movable.setPosition(this.position)
     }
     public getType(): string {
-        return 'Movable';
+        return 'Default';
     }
     public getValue(): IVector {
         return this.position

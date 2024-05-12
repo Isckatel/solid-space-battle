@@ -10,20 +10,20 @@ interface ICommand {
     getType(): string
 }
 
-class ExceptionMovalbeCommand implements ICommand {
+class ExceptionDefaultCommand implements ICommand {
     execute(): void {
-        console.log('exceptionMovalbeCommand')
+        console.log('ExceptionDefaultCommand')
         commandsCollection.push(
-            new WriteExceptionLog('exceptionMovalbeCommand')
+            new WriteExceptionLog('ExceptionDefaultCommand')
         )
     }
 
     getType(): string {
-        return 'exceptionMovalbeCommand'
+        return 'ExceptionDefaultCommand'
     }
 }
 
-class WriteExceptionLog extends ExceptionMovalbeCommand { //TODO DefaultClassError
+class WriteExceptionLog extends ExceptionDefaultCommand { 
     private nameException
     constructor(nameException) {
         super()
@@ -36,14 +36,14 @@ class WriteExceptionLog extends ExceptionMovalbeCommand { //TODO DefaultClassErr
     }
 }
 
-let exceptionMovalbeCommand: ICommand = new ExceptionMovalbeCommand();
+let exceptionDefaultCommand: ICommand = new ExceptionDefaultCommand();
 
-let exceptionMovalbeMap = new Map([
-    ['Error', exceptionMovalbeCommand],
+let exceptionDefaultMap = new Map([
+    ['Error', exceptionDefaultCommand],
 ])
 
 const exceptionStore = new Map<string,  Map<string, ICommand>>([
-    ['Movable', exceptionMovalbeMap],
+    ['Default', exceptionDefaultMap],
 ])
 
 let mockMovable = {
@@ -69,7 +69,7 @@ class ExceptionHandler {
         this.store = store
     }
     public handle(c, e) {
-        let ct = c ? c.getType() : 'Movable' //TODO Default
+        let ct = c ? c.getType() : 'Default' 
         let et = e.name
         return this.store.get(ct)?.get(et);
     }
