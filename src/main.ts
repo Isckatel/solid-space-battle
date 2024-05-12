@@ -1,6 +1,6 @@
 const rotableCom = require("./rotable")
 const movableCom = require("./movable")
-const exStore = require("./exceptionStore")
+const fs = require('fs')
 
 const CommandRotateCl = rotableCom.CommandRotate
 const CommandMoveCl = movableCom.CommandMove
@@ -10,6 +10,41 @@ interface ICommand {
     getType(): string
 }
 
+class ExceptionMovalbeCommand implements ICommand {
+    execute(): void {
+        console.log('exceptionMovalbeCommand')
+        commandsCollection.push(
+            new WriteExceptionLog('exceptionMovalbeCommand')
+        )
+    }
+
+    getType(): string {
+        return 'exceptionMovalbeCommand'
+    }
+}
+
+class WriteExceptionLog extends ExceptionMovalbeCommand { //TODO DefaultClassError
+    private nameException
+    constructor(nameException) {
+        super()
+        this.nameException = nameException
+    }
+    execute(): void {
+        fs.appendFile('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
+            if(error) { return console.log(error) }            
+        })
+    }
+}
+
+let exceptionMovalbeCommand: ICommand = new ExceptionMovalbeCommand();
+
+let exceptionMovalbeMap = new Map([
+    ['Error', exceptionMovalbeCommand],
+])
+
+const exceptionStore = new Map<string,  Map<string, ICommand>>([
+    ['Movable', exceptionMovalbeMap],
+])
 
 let mockMovable = {
     getPosition() {
@@ -40,7 +75,7 @@ class ExceptionHandler {
     }
 }
 
-const exceptionHandler = new ExceptionHandler(exStore.exceptionStore)
+const exceptionHandler = new ExceptionHandler(exceptionStore)
 
 while(!stopLoop) {
     let  c = commandsCollection.shift()

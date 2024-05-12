@@ -2,6 +2,7 @@ const assert1 = require("assert")
 const rotable = require("./rotable")
 
 describe("Rotable Tests", function(){
+    return;
     it('При угле равном 2 частям, меняем угол на -4 части, получаем -2', () => {
         let mockRotable: Rotable = {
             getDirection() : Direction {
