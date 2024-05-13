@@ -23,14 +23,14 @@ class DefaultCommand implements ICommand {
 
 class DefaultExceptionHandler implements ICommand {
     execute(): void {
-        console.log('ExceptionHandlerDefault')
+        console.log('DefaultExceptionHandler')
         commandsCollection.push(
-            new WriteExceptionCommand('ExceptionHandlerDefault')
+            new WriteExceptionCommand('DefaultExceptionHandler')
         )
     }
 
     getType(): string {
-        return 'ExceptionHandlerDefault'
+        return 'DefaultExceptionHandler'
     }
 }
 
@@ -46,6 +46,18 @@ class WriteExceptionCommand extends DefaultCommand {
         })
     }
 }
+
+class ReplayCommand extends DefaultCommand { 
+    private command: ICommand
+    constructor(command) {
+        super()
+        this.command = command
+    }
+    execute(): void {
+        commandsCollection.push(this.command)
+    }
+}
+
 
 let defaultExceptionHandler: ICommand = new DefaultExceptionHandler();
 
