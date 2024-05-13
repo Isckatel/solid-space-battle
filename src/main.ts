@@ -10,20 +10,31 @@ interface ICommand {
     getType(): string
 }
 
-class ExceptionDefaultCommand implements ICommand {
+class DefaultCommand implements ICommand {
     execute(): void {
-        console.log('ExceptionDefaultCommand')
+        console.log('DefaultCommand')
+    }
+
+    getType(): string {
+        return 'DefaultCommand'
+    }
+}
+
+
+class DefaultExceptionHandler implements ICommand {
+    execute(): void {
+        console.log('ExceptionHandlerDefault')
         commandsCollection.push(
-            new WriteExceptionLog('ExceptionDefaultCommand')
+            new WriteExceptionCommand('ExceptionHandlerDefault')
         )
     }
 
     getType(): string {
-        return 'ExceptionDefaultCommand'
+        return 'ExceptionHandlerDefault'
     }
 }
 
-class WriteExceptionLog extends ExceptionDefaultCommand { 
+class WriteExceptionCommand extends DefaultCommand { 
     private nameException
     constructor(nameException) {
         super()
@@ -31,15 +42,15 @@ class WriteExceptionLog extends ExceptionDefaultCommand {
     }
     execute(): void {
         fs.appendFile('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
-            if(error) { return console.log(error) }            
+            if(error) { return console.log(error) }
         })
     }
 }
 
-let exceptionDefaultCommand: ICommand = new ExceptionDefaultCommand();
+let defaultExceptionHandler: ICommand = new DefaultExceptionHandler();
 
 let exceptionDefaultMap = new Map([
-    ['Error', exceptionDefaultCommand],
+    ['Error', defaultExceptionHandler],
 ])
 
 const exceptionStore = new Map<string,  Map<string, ICommand>>([
