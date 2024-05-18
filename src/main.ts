@@ -32,10 +32,15 @@ class DefaultExceptionHandler implements ICommand {
 }
 
 class  WriteExceptionHandler extends DefaultExceptionHandler {
+    private e: any
+    constructor(e) {
+        super()
+        this.e = e
+    }
     execute(): void {
         console.log('WriteExceptionHandler')
         commandsCollection.push(
-            new WriteExceptionCommand('WriteExceptionHandler')
+            new WriteExceptionCommand(this.e.name)
         )
     }
 
@@ -125,8 +130,8 @@ class ExceptionHandler {
         return this.store.get(ct)?.get(et);
     }
 
-    public registerHandler(c: ICommand, e: any, h: ICommand) {
-        let ct = c.getType()
+    public registerHandler(c: ICommand|undefined, e: any, h: ICommand) {
+        let ct = c ? c.getType() : 'Default'
         let errorMap = this.store.get(ct);
         if (errorMap) {
             errorMap.set(e.name, h)
@@ -141,6 +146,8 @@ class ExceptionHandler {
 
 const exceptionHandler = new ExceptionHandler(exceptionStore)
 
+let replayCommandsCollection: Array<ICommand|undefined> = []
+
 while(!stopLoop) {
     let  c = commandsCollection.shift()
     try {
@@ -149,7 +156,18 @@ while(!stopLoop) {
         } else {
             stopLoop = true
         }
-    } catch (e) {
+    } catch (e: any) {
+        let cmdReplay = replayCommandsCollection.find( itm => itm == c)
+        if (!cmdReplay) {
+            replayCommandsCollection.push(c)
+            const h = new ReplayExceptionHandler(c)
+            e.name = 'Replay'
+            exceptionHandler.registerHandler(c, e, h)
+        } else {
+            const idx = replayCommandsCollection.indexOf(c)
+            replayCommandsCollection.splice(idx, 1)
+        }
+
         exceptionHandler.handle(c,e)?.execute()
     }
 }
