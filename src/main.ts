@@ -73,6 +73,19 @@ class ExceptionHandler {
         let et = e.name
         return this.store.get(ct)?.get(et);
     }
+
+    public registerHandler(c: ICommand, e: any, h: ICommand) {
+        let ct = c.getType()
+        let errorMap = this.store.get(ct);
+        if (errorMap) {
+            errorMap.set(e.name, h)
+        } else {
+            let newException = new Map([
+                [e.name, h]
+            ])
+            this.store.set(ct, newException)
+        }
+    }
 }
 
 const exceptionHandler = new ExceptionHandler(exceptionStore)
