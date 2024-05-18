@@ -31,6 +31,7 @@ class CommandMove implements ICommand  {
         this.movable = movable
     }
     public execute() {
+        console.log('start exectute CommandMove')
         this.position = new Vector(
             this.movable.getPosition().x + this.movable.getVelocity().x,
             this.movable.getPosition().y + this.movable.getVelocity().y

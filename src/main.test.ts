@@ -19,6 +19,8 @@ describe("Execute Tests", function(){
         let stopLoop = false; 
         let exceptionHandler = main.exceptionHandler;
 
+        let replayCommandsCollection: Array<ICommand|undefined> = []
+
         while(!stopLoop) {
             let  c = commandsCollection.shift()
             try {
@@ -27,7 +29,21 @@ describe("Execute Tests", function(){
                 } else {
                     stopLoop = true
                 }
-            } catch (e) {
+            } catch (e: any) {
+                let cmdReplay = replayCommandsCollection.find( itm => itm == c)
+                if (!cmdReplay) {
+                    replayCommandsCollection.push(c)
+                    const h = new main.ReplayExceptionHandler(c)
+                    e.name = 'Replay'
+                    exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
+                } else {
+                    const idx = replayCommandsCollection.indexOf(c)
+                    replayCommandsCollection.splice(idx, 1)
+                    const h = new main.WriteExceptionHandler(c)
+                    e.name = 'Write'
+                    exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
+                }
+        
                 exceptionHandler.handle(c,e)?.execute()
             }
         }

@@ -59,6 +59,7 @@ class WriteExceptionCommand extends DefaultCommand {
         fs.appendFile('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
             if(error) { return console.log(error) }
         })
+        console.log('Execute WriteCommand')
     }
 }
 
@@ -70,6 +71,7 @@ class ReplayCommand extends DefaultCommand {
     }
     execute(): void {
         commandsCollection.push(this.command)
+        console.log('Execute ReplayCommand')
     }
 }
 
@@ -162,10 +164,13 @@ while(!stopLoop) {
             replayCommandsCollection.push(c)
             const h = new ReplayExceptionHandler(c)
             e.name = 'Replay'
-            exceptionHandler.registerHandler(c, e, h)
+            exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
         } else {
             const idx = replayCommandsCollection.indexOf(c)
             replayCommandsCollection.splice(idx, 1)
+            const h = new WriteExceptionHandler(c)
+            e.name = 'Write'
+            exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
         }
 
         exceptionHandler.handle(c,e)?.execute()
@@ -173,3 +178,5 @@ while(!stopLoop) {
 }
 
 module.exports.exceptionHandler = exceptionHandler
+module.exports.ReplayExceptionHandler = ReplayExceptionHandler
+module.exports.WriteExceptionHandler = WriteExceptionCommand
