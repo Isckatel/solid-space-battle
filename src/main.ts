@@ -61,6 +61,9 @@ class WriteExceptionCommand extends DefaultCommand {
         })
         console.log('Execute WriteCommand')
     }
+    public getType(): string {
+        return 'WriteCommand';
+    }
 }
 
 class ReplayCommand extends DefaultCommand { 
@@ -72,6 +75,9 @@ class ReplayCommand extends DefaultCommand {
     execute(): void {
         commandsCollection.push(this.command)
         console.log('Execute ReplayCommand')
+    }
+    public getType(): string {
+        return 'ReplayCommand';
     }
 }
 
