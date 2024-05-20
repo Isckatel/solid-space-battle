@@ -163,13 +163,11 @@ while(!stopLoop) {
         if (!cmdReplay) {
             replayCommandsCollection.push(c)
             const h = new ReplayExceptionHandler(c)
-            e.name = 'Replay'
             exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
         } else {
             const idx = replayCommandsCollection.indexOf(c)
             replayCommandsCollection.splice(idx, 1)
-            const h = new WriteExceptionHandler(c)
-            e.name = 'Write'
+            const h = new WriteExceptionHandler(e)
             exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
         }
 
