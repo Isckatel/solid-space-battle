@@ -125,7 +125,6 @@ const movableCommand = new movableCom.CommandMove(mockMovable)
 
 let commandsCollection: Array<ICommand> = [movableCommand]
 
-let stopLoop = false; 
 
 class ExceptionHandler {
     private store: Map<string, Map<string, ICommand>>
@@ -135,12 +134,12 @@ class ExceptionHandler {
     public handle(c, e) {
         let ct = c ? c.getType() : 'Default' 
         let et = e.name
-        return this.store.get(ct)?.get(et);
+        return this.store.get(ct)?.get(et)
     }
 
     public registerHandler(c: ICommand|undefined, e: any, h: ICommand) {
         let ct = c ? c.getType() : 'Default'
-        let errorMap = this.store.get(ct);
+        let errorMap = this.store.get(ct)
         if (errorMap) {
             errorMap.set(e.name, h)
         } else {
@@ -156,31 +155,38 @@ const exceptionHandler = new ExceptionHandler(exceptionStore)
 
 let replayCommandsCollection: Array<ICommand|undefined> = []
 
-while(!stopLoop) {
-    let  c = commandsCollection.shift()
-    try {
-        if (c) {
-            c.execute()
-        } else {
-            stopLoop = true
-        }
-    } catch (e: any) {
-        let cmdReplay = replayCommandsCollection.find( itm => itm == c)
-        if (!cmdReplay) {
-            replayCommandsCollection.push(c)
-            const h = new ReplayExceptionHandler(c)
-            exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
-        } else {
-            const idx = replayCommandsCollection.indexOf(c)
-            replayCommandsCollection.splice(idx, 1)
-            const h = new WriteExceptionHandler(e)
-            exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
-        }
+function eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler) {
+    let stopLoop = false; 
 
-        exceptionHandler.handle(c,e)?.execute()
+    while(!stopLoop) {
+        let  c = commandsCollection.shift()
+        try {
+            if (c) {
+                c.execute()
+            } else {
+                stopLoop = true
+            }
+        } catch (e: any) {
+            let cmdReplay = replayCommandsCollection.find( itm => itm == c)
+            if (!cmdReplay) {
+                replayCommandsCollection.push(c)
+                const h = new ReplayExceptionHandler(c)
+                exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
+            } else {
+                const idx = replayCommandsCollection.indexOf(c)
+                replayCommandsCollection.splice(idx, 1)
+                const h = new WriteExceptionHandler(e)
+                exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
+            }
+
+            exceptionHandler.handle(c,e)?.execute()
+        }
     }
 }
 
+eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
+
 module.exports.exceptionHandler = exceptionHandler
 module.exports.ReplayExceptionHandler = ReplayExceptionHandler
-module.exports.WriteExceptionHandler = WriteExceptionCommand
+module.exports.WriteExceptionCommand = WriteExceptionCommand
+module.exports.eventLoop = eventLoop

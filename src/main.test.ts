@@ -4,6 +4,32 @@ const movableCom2 = require("./movable")
 const fs2 = require('fs')
 
 describe("Execute Tests", function(){
+    it('Команду, которая записывает информацию о выброшенном исключении в лог', () => {
+        //Arrange
+        let mockMovable = {
+            getPosition() {
+                throw new Error("No data");//return { x: 12, y: 5 }
+            },
+            getVelocity() {
+                return { x: -7, y: 3 }
+            },
+            setPosition(newV) {
+            }
+        };
+        try {
+            mockMovable.getPosition();
+        } catch (error) {
+            const c = new main.WriteExceptionCommand(error);
+            c.execute();
+            //В лог-файле должна быть запсь об ошибке
+            const data = fs2.readFileSync("error.log")
+            const firstLine = (String(data).match(/(^.*)/) || [])[1] || ''
+            assert2.match(firstLine, /Error/, 'Строка должна соответствовать выражению ')
+            fs2.truncateSync("error.log")
+        }
+        
+    })
+
     it('Повтор команды и запись в лог', () => {
         //Arrange
         let mockMovable = {
@@ -43,7 +69,7 @@ describe("Execute Tests", function(){
                 } else {
                     const idx = replayCommandsCollection.indexOf(c)
                     replayCommandsCollection.splice(idx, 1)
-                    const h = new main.WriteExceptionHandler(e)
+                    const h = new main.WriteExceptionCommand(e)
                     exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
                 }
 
@@ -63,5 +89,6 @@ describe("Execute Tests", function(){
         const data = fs2.readFileSync("error.log")
         const firstLine = (String(data).match(/(^.*)/) || [])[1] || ''
         assert2.match(firstLine, /Error/, 'Строка должна соответствовать выражению ')
+        fs2.truncateSync("error.log")
     })
 })
