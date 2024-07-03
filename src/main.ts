@@ -39,7 +39,7 @@ class  WriteExceptionHandler extends DefaultExceptionHandler {
     }
     execute(): void {
         console.log('WriteExceptionHandler')
-        commandsCollection.push(
+        commandsCollection.add(
             new WriteExceptionCommand(this.e.name)
         )
     }
@@ -73,7 +73,7 @@ class ReplayCommand extends DefaultCommand {
         this.command = command
     }
     execute(): void {
-        commandsCollection.push(this.command)
+        commandsCollection.add(this.command)
         console.log('Execute ReplayCommand')
     }
     public getType(): string {
@@ -89,7 +89,7 @@ class ReplayExceptionHandler extends DefaultExceptionHandler {
     }
     execute(): void {
         console.log('ReplayExceptionHandler')
-        commandsCollection.push(
+        commandsCollection.add(
             new ReplayCommand(this.command)
         )
     }
@@ -123,7 +123,25 @@ let mockMovable = {
 
 const movableCommand = new movableCom.CommandMove(mockMovable)
 
-let commandsCollection: Array<ICommand> = [movableCommand]
+class CommandsCollection {
+    private commands: Array<ICommand> = []
+    constructor() {
+
+    }
+    public add(c: ICommand) {
+        this.commands.push(c)
+        fs.appendFile('registration-queue.log', this.commands.at(-1)?.getType() + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
+            if(error) { return console.log(error) }
+        })
+    }
+    public getCommand() {
+        return this.commands.shift()
+    }
+}
+
+//let commandsCollection: Array<ICommand> = [movableCommand]
+let commandsCollection = new CommandsCollection()
+commandsCollection.add(movableCommand)
 
 
 class ExceptionHandler {
@@ -155,11 +173,11 @@ const exceptionHandler = new ExceptionHandler(exceptionStore)
 
 let replayCommandsCollection: Array<ICommand|undefined> = []
 
-function eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler) {
+function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollection, exceptionHandler) {
     let stopLoop = false; 
 
     while(!stopLoop) {
-        let  c = commandsCollection.shift()
+        let  c = commandsCollection.getCommand()
         try {
             if (c) {
                 c.execute()

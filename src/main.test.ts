@@ -3,8 +3,9 @@ const main = require("./main")
 const movableCom2 = require("./movable")
 const fs2 = require('fs')
 
+
 describe("Execute Tests", function(){
-    it('Команду, которая записывает информацию о выброшенном исключении в лог', () => {
+    it('п.4. Команду, которая записывает информацию о выброшенном исключении в лог', () => {
         //Arrange
         let mockMovable = {
             getPosition() {
@@ -30,6 +31,37 @@ describe("Execute Tests", function(){
         
     })
 
+    it('п.5. Обработчик исключения, который ставит Команду, пишущую в лог в очередь Команд', () => {
+        //Arrange
+        let mockMovable = {
+            getPosition() {
+                throw new Error("No data");//return { x: 12, y: 5 }
+            },
+            getVelocity() {
+                return { x: -7, y: 3 }
+            },
+            setPosition(newV) {
+            }
+        };
+        const c = new movableCom2.CommandMove(mockMovable)
+        let exceptionHandler = main.exceptionHandler
+
+        //Act
+        try {            
+            c.execute()
+        } catch(e:any) {
+            const h = new WriteExceptionHandler(e)
+            exceptionHandler.registerHandler(c, e, h)
+        }
+
+        //Assert
+        //В  логах очереди должна быть команда для повтора
+        const data = fs2.readFileSync("registration-queue.log")
+        const firstLine = (String(data).match(/(^.*)/) || [])[1] || ''
+        assert2.match(firstLine, /WriteCommand/, 'Строка должна соответствовать выражению ')
+        fs2.truncateSync("registration-queue.log")
+    })
+
     it('Повтор команды и запись в лог', () => {
         //Arrange
         let mockMovable = {
@@ -45,7 +77,7 @@ describe("Execute Tests", function(){
         const movableCommand = new movableCom2.CommandMove(mockMovable)
         let commandsCollection: Array<ICommand> = [movableCommand]
         let stopLoop = false; 
-        let exceptionHandler = main.exceptionHandler;
+        
 
         let replayCommandsCollection: Array<ICommand|undefined> = []
 
