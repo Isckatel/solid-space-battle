@@ -1,106 +1,30 @@
 const rotableCom = require("./rotable")
 const movableCom = require("./movable")
+const handlers = require('./handlers')
 const fs = require('fs')
+
+class CommandsCollection {
+    private commands: Array<ICommand> = []
+    constructor() {
+
+    }
+    public add(c: ICommand) {
+        this.commands.push(c)
+        fs.appendFile('registration-queue.log', this.commands.at(-1)?.getType() + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
+            if(error) { return console.log(error) }
+        })
+    }
+    public getCommand() {
+        return this.commands.shift()
+    }
+}
 
 const CommandRotateCl = rotableCom.CommandRotate
 const CommandMoveCl = movableCom.CommandMove
+//let commandsCollection: Array<ICommand> = [movableCommand]
+let commandsCollection = new CommandsCollection()
 
-interface ICommand {
-    execute(): void
-    getType(): string
-}
-
-class DefaultCommand implements ICommand {
-    execute(): void {
-        console.log('DefaultCommand')
-    }
-
-    getType(): string {
-        return 'DefaultCommand'
-    }
-}
-
-
-class DefaultExceptionHandler implements ICommand {
-    execute(): void {
-        console.log('DefaultExceptionHandler')
-    }
-
-    getType(): string {
-        return 'DefaultExceptionHandler'
-    }
-}
-
-class  WriteExceptionHandler extends DefaultExceptionHandler {
-    private e: any
-    constructor(e) {
-        super()
-        this.e = e
-    }
-    execute(): void {
-        console.log('WriteExceptionHandler')
-        commandsCollection.add(
-            new WriteExceptionCommand(this.e.name)
-        )
-    }
-
-    getType(): string {
-        return 'WriteExceptionHandler'
-    }
-}
-
-class WriteExceptionCommand extends DefaultCommand { 
-    private nameException
-    constructor(nameException) {
-        super()
-        this.nameException = nameException
-    }
-    execute(): void {
-        fs.appendFile('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
-            if(error) { return console.log(error) }
-        })
-        console.log('Execute WriteCommand')
-    }
-    public getType(): string {
-        return 'WriteCommand';
-    }
-}
-
-class ReplayCommand extends DefaultCommand { 
-    private command: ICommand
-    constructor(command) {
-        super()
-        this.command = command
-    }
-    execute(): void {
-        commandsCollection.add(this.command)
-        console.log('Execute ReplayCommand')
-    }
-    public getType(): string {
-        return 'ReplayCommand';
-    }
-}
-
-class ReplayExceptionHandler extends DefaultExceptionHandler {
-    private command: ICommand
-    constructor(command) {
-        super()
-        this.command = command
-    }
-    execute(): void {
-        console.log('ReplayExceptionHandler')
-        commandsCollection.add(
-            new ReplayCommand(this.command)
-        )
-    }
-
-    getType(): string {
-        return 'ReplayExceptionHandler'
-    }
-}
-
-
-let defaultExceptionHandler: ICommand = new DefaultExceptionHandler();
+let defaultExceptionHandler: ICommand = new handlers.DefaultExceptionHandler(commandsCollection);
 
 let exceptionDefaultMap = new Map([
     ['Error', defaultExceptionHandler],
@@ -123,24 +47,6 @@ let mockMovable = {
 
 const movableCommand = new movableCom.CommandMove(mockMovable)
 
-class CommandsCollection {
-    private commands: Array<ICommand> = []
-    constructor() {
-
-    }
-    public add(c: ICommand) {
-        this.commands.push(c)
-        fs.appendFile('registration-queue.log', this.commands.at(-1)?.getType() + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
-            if(error) { return console.log(error) }
-        })
-    }
-    public getCommand() {
-        return this.commands.shift()
-    }
-}
-
-//let commandsCollection: Array<ICommand> = [movableCommand]
-let commandsCollection = new CommandsCollection()
 commandsCollection.add(movableCommand)
 
 
@@ -188,12 +94,12 @@ function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollect
             let cmdReplay = replayCommandsCollection.find( itm => itm == c)
             if (!cmdReplay) {
                 replayCommandsCollection.push(c)
-                const h = new ReplayExceptionHandler(c)
+                const h = new handlers.ReplayExceptionHandler(commandsCollection, c)
                 exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
             } else {
                 const idx = replayCommandsCollection.indexOf(c)
                 replayCommandsCollection.splice(idx, 1)
-                const h = new WriteExceptionHandler(e)
+                const h = new handlers.WriteExceptionHandler(commandsCollection, e)
                 exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
             }
 
@@ -202,9 +108,11 @@ function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollect
     }
 }
 
-eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
+//eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
 
 module.exports.exceptionHandler = exceptionHandler
-module.exports.ReplayExceptionHandler = ReplayExceptionHandler
-module.exports.WriteExceptionCommand = WriteExceptionCommand
+module.exports.ReplayExceptionHandler = handlers.ReplayExceptionHandler
+module.exports.WriteExceptionCommand = handlers.WriteExceptionCommand
+module.exports.WriteExceptionHandler = handlers.WriteExceptionHandler
+module.exports.CommandsCollection = CommandsCollection
 module.exports.eventLoop = eventLoop
