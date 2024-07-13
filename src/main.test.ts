@@ -51,19 +51,22 @@ describe("Execute Tests", function(){
         const c = new movableCom2.CommandMove(mockMovable)
         let exceptionHandler = main.exceptionHandler
         let commandsCollection = new main.CommandsCollection()
+        commandsCollection.add(c)
         //Act
         try {            
             c.execute()
         } catch(e:any) {
             const h = new main.WriteExceptionHandler(commandsCollection, e)
             exceptionHandler.registerHandler(c, e, h)
+            exceptionHandler.handle(c,e)?.execute()
         }
 
         //Assert
         //В  логах очереди должна быть команда записи
         const data = fs2.readFileSync("registration-queue.log")
-        const firstLine = (String(data).match(/(^.*)/) || [])[1] || ''
-        assert2.match(firstLine, /WriteCommand/, 'Строка должна соответствовать выражению ')
+        const lines = String(data).split('\n')
+        const lastLine = lines[lines.length-2]
+        assert2.match(lastLine, /WriteCommand/, 'Строка должна соответствовать выражению ')
         fs2.truncateSync("registration-queue.log")
     })
 

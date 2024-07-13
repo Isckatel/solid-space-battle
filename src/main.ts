@@ -4,13 +4,13 @@ const handlers = require('./handlers')
 const fs = require('fs')
 
 class CommandsCollection {
+    //Коллекция команд для 'event loop'
     private commands: Array<ICommand> = []
     constructor() {
-
     }
     public add(c: ICommand) {
         this.commands.push(c)
-        fs.appendFile('registration-queue.log', this.commands.at(-1)?.getType() + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
+        fs.appendFileSync('registration-queue.log', this.commands.at(-1)?.getType() + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
             if(error) { return console.log(error) }
         })
     }
@@ -19,9 +19,6 @@ class CommandsCollection {
     }
 }
 
-const CommandRotateCl = rotableCom.CommandRotate
-const CommandMoveCl = movableCom.CommandMove
-//let commandsCollection: Array<ICommand> = [movableCommand]
 let commandsCollection = new CommandsCollection()
 
 let defaultExceptionHandler: ICommand = new handlers.DefaultExceptionHandler(commandsCollection);
@@ -29,7 +26,7 @@ let defaultExceptionHandler: ICommand = new handlers.DefaultExceptionHandler(com
 let exceptionDefaultMap = new Map([
     ['Error', defaultExceptionHandler],
 ])
-
+//Словарь словарей хранящий различные обработчики ошибок
 const exceptionStore = new Map<string,  Map<string, ICommand>>([
     ['Default', exceptionDefaultMap],
 ])
@@ -44,13 +41,13 @@ let mockMovable = {
     setPosition(newV) {
     }
 };
-
 const movableCommand = new movableCom.CommandMove(mockMovable)
 
 commandsCollection.add(movableCommand)
 
 
 class ExceptionHandler {
+    //Выбирает нужный обработчик или регистрирует новый
     private store: Map<string, Map<string, ICommand>>
     constructor(store) {
         this.store = store

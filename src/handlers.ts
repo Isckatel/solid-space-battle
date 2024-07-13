@@ -55,7 +55,7 @@ class WriteExceptionCommand extends DefaultCommand {
         this.nameException = nameException
     }
     execute(): void {
-        fs3.appendFile('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
+        fs3.appendFileSync('error.log', this.nameException + ' '  + new Date().toLocaleDateString('ru') + ' ' +new Date().toLocaleTimeString('ru') + '\n',  function(error){
             if(error) { return console.log(error) }
         })
         console.log('Execute WriteCommand')
