@@ -116,6 +116,7 @@ eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
 
 module.exports.exceptionHandler = exceptionHandler
 module.exports.ReplayExceptionHandler = handlers.ReplayExceptionHandler
+module.exports.ReplayCommand = handlers.ReplayCommand
 module.exports.WriteExceptionCommand = handlers.WriteExceptionCommand
 module.exports.WriteExceptionHandler = handlers.WriteExceptionHandler
 module.exports.CommandsCollection = CommandsCollection

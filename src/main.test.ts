@@ -70,6 +70,34 @@ describe("Execute Tests", function(){
         fs2.truncateSync("registration-queue.log")
     })
 
+    it('п.6. Команда, которая повторяет Команду, выбросившую исключение', () => {
+        //Arrange
+        let mockMovable = {
+            getPosition() {
+                throw new Error("No data");//return { x: 12, y: 5 }
+            },
+            getVelocity() {
+                return { x: -7, y: 3 }
+            },
+            setPosition(newV) {
+            }
+        }
+        const c = new movableCom2.CommandMove(mockMovable)
+        let commandsCollection = new main.CommandsCollection()
+        //Act
+        try {
+            c.execute()
+        } catch (error) {
+            console.log('catch test п.4')
+            const replayC = new main.ReplayCommand(commandsCollection, c);
+            replayC.execute();
+        }
+
+        //Assert
+        //В коллекции команд должна появиться комманда из Arrange
+        assert2.equal(commandsCollection.getCommand().getType(), c.getType())
+    })
+
     // it('Повтор команды и запись в лог', () => {
     //     //Arrange
     //     let mockMovable = {

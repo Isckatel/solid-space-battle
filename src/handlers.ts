@@ -66,13 +66,15 @@ class WriteExceptionCommand extends DefaultCommand {
 }
 
 class ReplayCommand extends DefaultCommand { 
+    private commandsCollection
     private command: ICommand
-    constructor(command) {
+    constructor(commandsCollection, command) {
         super()
+        this.commandsCollection = commandsCollection
         this.command = command
     }
     execute(): void {
-        commandsCollection.add(this.command)
+        this.commandsCollection.add(this.command)
         console.log('Execute ReplayCommand')
     }
     public getType(): string {
@@ -89,7 +91,7 @@ class ReplayExceptionHandler extends DefaultExceptionHandler {
     execute(): void {
         console.log('ReplayExceptionHandler')
         this.commandsCollection.add(
-            new ReplayCommand(this.command)
+            new ReplayCommand(this.commandsCollection, this.command)
         )
     }
 
