@@ -17,6 +17,9 @@ class CommandsCollection {
     public getCommand() {
         return this.commands.shift()
     }
+    public getCommands() {
+        return this.commands
+    }
 }
 
 let commandsCollection = new CommandsCollection()
@@ -78,8 +81,10 @@ let replayCommandsCollection: Array<ICommand|undefined> = []
 
 function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollection, exceptionHandler) {
     let stopLoop = false; 
-
+    // let indexLoop = 0;
     while(!stopLoop) {
+        // console.log('indx: ' + indexLoop)
+        // console.log(commandsCollection.getCommands())
         let  c = commandsCollection.getCommand()
         try {
             if (c) {
@@ -88,7 +93,7 @@ function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollect
                 stopLoop = true
             }
         } catch (e: any) {
-            let cmdReplay = replayCommandsCollection.find( itm => itm == c)
+            let cmdReplay = replayCommandsCollection.find( itm => itm.getType() == c?.getType())
             if (!cmdReplay) {
                 replayCommandsCollection.push(c)
                 const h = new handlers.ReplayExceptionHandler(commandsCollection, c)
@@ -100,12 +105,14 @@ function eventLoop(commandsCollection: CommandsCollection, replayCommandsCollect
                 exceptionHandler.registerHandler(c, e, h)//TODO похоже будет дублирование
             }
 
+            // console.log('after cathch: ' + commandsCollection.getCommands())
             exceptionHandler.handle(c,e)?.execute()
+            // indexLoop++
         }
     }
 }
 
-//eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
+eventLoop(commandsCollection, replayCommandsCollection, exceptionHandler)
 
 module.exports.exceptionHandler = exceptionHandler
 module.exports.ReplayExceptionHandler = handlers.ReplayExceptionHandler
